@@ -1,0 +1,2157 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRAVO - إتمام الدفع</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Poppins:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #9333ea;
+            --primary-dark: #7e22ce;
+            --primary-light: #a855f7;
+            --secondary: #ec4899;
+            --accent: #f59e0b;
+            --success: #10b981;
+            --gradient-primary: linear-gradient(135deg, #9333ea 0%, #c026d3 50%, #ec4899 100%);
+            --gradient-secondary: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+            --gradient-accent: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+            --bg-dark: #0a0118;
+            --bg-dark-secondary: #1a0b2e;
+            --bg-dark-tertiary: #2d1b4e;
+            --card-dark: rgba(147, 51, 234, 0.08);
+            --border-dark: rgba(147, 51, 234, 0.2);
+            --bg-light: #faf5ff;
+            --bg-light-secondary: #f5f3ff;
+            --card-light: #ffffff;
+            --border-light: rgba(147, 51, 234, 0.15);
+            --text-dark: #ffffff;
+            --text-dark-secondary: rgba(255, 255, 255, 0.7);
+            --text-light: #1e1b4b;
+            --text-light-secondary: #64748b;
+            --bg-primary: var(--bg-dark);
+            --bg-secondary: var(--bg-dark-secondary);
+            --bg-tertiary: var(--bg-dark-tertiary);
+            --text-primary: var(--text-dark);
+            --text-secondary: var(--text-dark-secondary);
+            --card-bg: var(--card-dark);
+            --border-color: var(--border-dark);
+        }
+
+        body {
+            font-family: 'Cairo', 'Poppins', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            transition: all 0.4s ease;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(147, 51, 234, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(168, 85, 247, 0.1) 0%, transparent 50%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        body.light-mode {
+            --bg-primary: var(--bg-light);
+            --bg-secondary: var(--bg-light-secondary);
+            --bg-tertiary: #e9d5ff;
+            --text-primary: var(--text-light);
+            --text-secondary: var(--text-light-secondary);
+            --card-bg: var(--card-light);
+            --border-color: var(--border-light);
+        }
+
+        body.light-mode::before {
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(147, 51, 234, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.08) 0%, transparent 50%);
+        }
+
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: var(--gradient-primary);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            transition: opacity 0.5s, visibility 0.5s;
+        }
+
+        .loading-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader-container {
+            position: relative;
+            width: 240px;
+            height: 240px;
+        }
+
+        .loader {
+            width: 100%;
+            height: 100%;
+            border: 15px solid rgba(255,255,255,0.1);
+            border-top: 15px solid white;
+            border-right: 15px solid rgba(255,255,255,0.5);
+            border-radius: 50%;
+            animation: spin 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+        }
+
+        .loader-inner {
+            position: absolute;
+            top: 35px;
+            left: 35px;
+            width: 170px;
+            height: 170px;
+            border: 13px solid rgba(255,255,255,0.3);
+            border-bottom: 13px solid white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite reverse;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loader-logo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 140px;
+            height: 140px;
+            background: white;
+            border-radius: 50%;
+            padding: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.4);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .loader-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        @keyframes pulse {
+            0%, 100% { 
+                transform: translate(-50%, -50%) scale(1);
+                box-shadow: 0 15px 50px rgba(0,0,0,0.4);
+            }
+            50% { 
+                transform: translate(-50%, -50%) scale(1.2);
+                box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+            }
+        }
+
+        .loading-text {
+            margin-top: 65px;
+            font-size: 1.8em;
+            font-weight: 800;
+            color: white;
+            animation: fadeInOut 2s ease-in-out infinite;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 20px 5%;
+            background: rgba(10, 1, 24, 0.85);
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            border-bottom: 2px solid var(--border-color);
+            transition: all 0.3s ease;
+            animation: slideDown 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        body.light-mode header {
+            background: rgba(250, 245, 255, 0.95);
+            box-shadow: 0 5px 30px rgba(147, 51, 234, 0.1);
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+            gap: 30px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .logo:hover {
+            transform: scale(1.08);
+        }
+
+        .logo-img {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 20px rgba(147, 51, 234, 0.7));
+            animation: logoFloat 3s ease-in-out infinite;
+            transition: all 0.3s;
+        }
+
+        body.light-mode .logo-img {
+            filter: drop-shadow(0 0 20px rgba(147, 51, 234, 0.5));
+        }
+
+        .logo:hover .logo-img {
+            filter: drop-shadow(0 0 30px rgba(147, 51, 234, 1));
+            transform: translateY(-8px) rotate(8deg);
+        }
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+        }
+
+        .logo-text {
+            font-size: 2em;
+            font-weight: 900;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -1px;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .action-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            font-size: 1.2em;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.5s;
+            z-index: -1;
+        }
+
+        .action-btn:hover::before {
+            width: 200%;
+            height: 200%;
+        }
+
+        .action-btn:hover {
+            color: white;
+            border-color: transparent;
+            transform: scale(1.1) rotate(10deg);
+            box-shadow: 0 10px 30px rgba(147, 51, 234, 0.4);
+        }
+
+        .theme-icon.moon {
+            display: inline;
+        }
+
+        .theme-icon.sun {
+            display: none;
+        }
+
+        body.light-mode .theme-icon.moon {
+            display: none;
+        }
+
+        body.light-mode .theme-icon.sun {
+            display: inline;
+        }
+
+        .lang-switch {
+            font-size: 0.9em;
+            font-weight: 800;
+            padding: 10px 20px;
+            border-radius: 25px;
+            letter-spacing: 1px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 140px 5% 60px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 50px;
+            animation: fadeInDown 0.8s;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .page-header h1 {
+            font-size: clamp(2.5em, 6vw, 4em);
+            font-weight: 900;
+            margin-bottom: 15px;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .page-header h1 .emoji {
+            font-style: normal;
+            filter: none;
+            background: none;
+            -webkit-text-fill-color: initial;
+        }
+
+        .page-header p {
+            font-size: 1.25em;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .checkout-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            animation: fadeInUp 0.8s;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .product-summary,
+        .payment-form {
+            background: var(--card-bg);
+            padding: 45px;
+            border-radius: 30px;
+            backdrop-filter: blur(20px);
+            border: 3px solid var(--border-color);
+            transition: all 0.4s;
+        }
+
+        body.light-mode .product-summary,
+        body.light-mode .payment-form {
+            box-shadow: 0 10px 40px rgba(147, 51, 234, 0.1);
+        }
+
+        .product-summary:hover,
+        .payment-form:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(147, 51, 234, 0.3);
+        }
+
+        .product-summary h2,
+        .payment-form h2 {
+            margin-bottom: 35px;
+            font-size: 2.2em;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .product-summary h2 .text,
+        .payment-form h2 .text {
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .product-summary h2 .emoji,
+        .payment-form h2 .emoji {
+            font-style: normal;
+        }
+
+        .product-image-preview {
+            width: 100%;
+            height: 320px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            object-fit: contain;
+            background: white;
+            padding: 25px;
+            border: 3px solid var(--border-color);
+        }
+
+        .product-image-icon {
+            width: 100%;
+            height: 320px;
+            background: var(--gradient-primary);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 7em;
+            margin-bottom: 30px;
+            color: white;
+            animation: iconFloat 4s ease-in-out infinite;
+        }
+
+        @keyframes iconFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(5deg); }
+        }
+
+        .product-details h3 {
+            font-size: 2em;
+            margin-bottom: 18px;
+            color: var(--text-primary);
+            font-weight: 800;
+        }
+
+        .product-details p {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 25px;
+            font-size: 1.05em;
+        }
+
+        .pdf-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(239, 68, 68, 0.15);
+            border: 2px solid #ef4444;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1.05em;
+            margin-bottom: 20px;
+            color: #ef4444;
+        }
+
+        body.light-mode .pdf-badge {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .product-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 25px;
+            padding: 25px;
+            background: rgba(147, 51, 234, 0.1);
+            border-radius: 15px;
+            border: 2px solid var(--border-color);
+        }
+
+        .product-info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .product-info-label {
+            font-size: 0.95em;
+            color: var(--text-secondary);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .product-info-value {
+            font-size: 1.1em;
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+
+        .price-breakdown {
+            background: rgba(147, 51, 234, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            margin-top: 30px;
+            border: 2px solid var(--border-color);
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 18px;
+            font-size: 1.15em;
+            font-weight: 600;
+        }
+
+        .price-row.total {
+            font-size: 1.8em;
+            font-weight: 900;
+            padding-top: 20px;
+            border-top: 3px solid var(--border-color);
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .price-row.total .label {
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .price-row.total .value {
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .delivery-info {
+            background: rgba(16, 185, 129, 0.1);
+            border: 2px solid #10b981;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            display: flex;
+            align-items: start;
+            gap: 15px;
+        }
+
+        .delivery-info i {
+            color: #10b981;
+            font-size: 1.5em;
+            margin-top: 3px;
+        }
+
+        .delivery-info-content h4 {
+            color: #10b981;
+            font-size: 1.2em;
+            margin-bottom: 8px;
+            font-weight: 800;
+        }
+
+        .delivery-info-content p {
+            color: var(--text-primary);
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .form-group {
+            margin-bottom: 28px;
+        }
+
+        .form-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-weight: 700;
+            font-size: 1.1em;
+            color: var(--text-primary);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 18px 20px;
+            border: 3px solid var(--border-color);
+            border-radius: 15px;
+            background: var(--card-bg);
+            color: var(--text-primary);
+            font-size: 1.1em;
+            font-family: 'Cairo', sans-serif;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        body.light-mode .form-group input {
+            box-shadow: 0 5px 20px rgba(147, 51, 234, 0.08);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 10px 30px rgba(147, 51, 234, 0.3);
+            transform: translateY(-3px);
+        }
+
+        .payment-methods-dropdown {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .dropdown-toggle {
+            width: 100%;
+            padding: 20px;
+            background: var(--card-bg);
+            border: 3px solid var(--border-color);
+            border-radius: 15px;
+            color: var(--text-primary);
+            font-size: 1.15em;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            font-weight: 700;
+        }
+
+        body.light-mode .dropdown-toggle {
+            box-shadow: 0 5px 20px rgba(147, 51, 234, 0.08);
+        }
+
+        .dropdown-toggle:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(147, 51, 234, 0.3);
+        }
+
+        .dropdown-toggle.active {
+            border-color: var(--primary);
+            background: rgba(147, 51, 234, 0.1);
+        }
+
+        .dropdown-toggle i.fa-chevron-down {
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .dropdown-toggle.active i.fa-chevron-down {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-menu {
+            position: relative;
+            width: 100%;
+            background: var(--bg-primary);
+            border: 3px solid var(--border-color);
+            border-radius: 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 10;
+            margin-top: 15px;
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        body.light-mode .dropdown-menu {
+            background: var(--bg-light);
+            box-shadow: 0 15px 50px rgba(147, 51, 234, 0.2);
+        }
+
+        .dropdown-menu.active {
+            max-height: 700px;
+            overflow-y: auto;
+            opacity: 1;
+            visibility: visible;
+            box-shadow: 0 20px 60px rgba(147, 51, 234, 0.4);
+        }
+
+        body.light-mode .dropdown-menu.active {
+            box-shadow: 0 20px 60px rgba(147, 51, 234, 0.25);
+        }
+
+        .dropdown-menu::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .dropdown-menu::-webkit-scrollbar-track {
+            background: rgba(147, 51, 234, 0.1);
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+
+        .dropdown-menu::-webkit-scrollbar-thumb {
+            background: var(--gradient-primary);
+            border-radius: 10px;
+        }
+
+        .dropdown-menu::-webkit-scrollbar-thumb:hover {
+            background: var(--gradient-secondary);
+        }
+
+        .dropdown-item {
+            padding: 22px 25px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            border-bottom: 2px solid var(--border-color);
+            background: transparent;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(147, 51, 234, 0.2);
+            transform: translateX(-8px);
+            padding-right: 35px;
+        }
+
+        body.light-mode .dropdown-item:hover {
+            background: rgba(147, 51, 234, 0.15);
+        }
+
+        .payment-method-logo {
+            width: 65px;
+            height: 65px;
+            object-fit: contain;
+            border-radius: 12px;
+            background: white;
+            padding: 10px;
+            flex-shrink: 0;
+            border: 2px solid var(--border-color);
+            transition: all 0.3s;
+        }
+
+        .dropdown-item:hover .payment-method-logo {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 8px 20px rgba(147, 51, 234, 0.3);
+        }
+
+        .dropdown-item-content {
+            flex: 1;
+        }
+
+        .dropdown-item-title {
+            font-weight: 800;
+            font-size: 1.2em;
+            margin-bottom: 6px;
+            color: var(--text-primary);
+        }
+
+        .dropdown-item-subtitle {
+            font-size: 0.98em;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        @keyframes fadeInItem {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .dropdown-menu.active .dropdown-item {
+            animation: fadeInItem 0.4s ease forwards;
+        }
+
+        body.light-mode .dropdown-menu {
+            border: 3px solid var(--primary);
+        }
+
+        body.light-mode .dropdown-item {
+            border-bottom-color: rgba(147, 51, 234, 0.15);
+        }
+
+        body.light-mode .payment-method-logo {
+            border-color: rgba(147, 51, 234, 0.2);
+            box-shadow: 0 3px 10px rgba(147, 51, 234, 0.1);
+        }
+
+        .payment-instructions {
+            background: rgba(147, 51, 234, 0.1);
+            border: 3px solid var(--border-color);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 25px;
+            display: none;
+            animation: slideDownFade 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes slideDownFade {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .payment-instructions.active {
+            display: block;
+        }
+
+        .payment-instructions h4 {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-primary);
+            font-weight: 800;
+        }
+
+        .instruction-item {
+            background: var(--card-bg);
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: start;
+            gap: 18px;
+            border: 2px solid var(--border-color);
+            transition: all 0.3s;
+        }
+
+        .instruction-item:hover {
+            transform: translateX(-5px);
+            border-color: var(--primary);
+        }
+
+        .instruction-number {
+            background: var(--gradient-primary);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            flex-shrink: 0;
+            color: white;
+            font-size: 1.1em;
+        }
+
+        .account-details {
+            background: var(--card-bg);
+            padding: 18px;
+            border-radius: 12px;
+            margin: 18px 0;
+            font-family: monospace;
+            border: 2px solid var(--border-color);
+            font-size: 1.05em;
+        }
+
+        .copy-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.95em;
+            margin-right: 12px;
+            transition: all 0.4s;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .copy-btn:hover {
+            background: #059669;
+            transform: scale(1.08) translateY(-2px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .upload-section {
+            background: var(--card-bg);
+            border: 3px dashed var(--border-color);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 25px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .upload-section.has-file {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .upload-section h4 {
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .upload-area {
+            position: relative;
+            margin: 20px 0;
+        }
+
+        .upload-input {
+            display: none;
+        }
+
+        .upload-label {
+            display: inline-block;
+            padding: 18px 40px;
+            background: var(--gradient-primary);
+            color: white;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 1.1em;
+            transition: all 0.4s;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .upload-label:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(147, 51, 234, 0.5);
+        }
+
+        .upload-preview {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .upload-preview.active {
+            display: block;
+        }
+
+        .upload-preview img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 15px;
+            border: 3px solid var(--success);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+        }
+
+        .upload-info {
+            margin-top: 15px;
+            color: var(--text-secondary);
+            font-size: 0.95em;
+        }
+
+        .upload-success {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: var(--success);
+            font-weight: 700;
+            font-size: 1.1em;
+            margin-top: 15px;
+        }
+
+        .upload-success.active {
+            display: flex;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 20px;
+            background: var(--gradient-primary);
+            border: none;
+            border-radius: 15px;
+            color: white;
+            font-size: 1.4em;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            margin-top: 25px;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            box-shadow: 0 15px 40px rgba(147, 51, 234, 0.5);
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 50px rgba(147, 51, 234, 0.7);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .security-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 25px;
+            color: var(--text-secondary);
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .security-badge i {
+            color: #10b981;
+            font-size: 1.3em;
+        }
+
+        .warning-box {
+            background: rgba(251, 191, 36, 0.15);
+            border: 3px solid #fbbf24;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .warning-box strong {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.15em;
+            margin-bottom: 12px;
+        }
+
+        .warning-box i {
+            color: #fbbf24;
+            font-size: 1.3em;
+        }
+
+        .warning-box p {
+            line-height: 1.8;
+            color: var(--text-primary);
+        }
+
+        .steps-indicator {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding: 25px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            border: 2px solid var(--border-color);
+        }
+
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            position: relative;
+        }
+
+        .step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 20px;
+            right: -50%;
+            width: 100%;
+            height: 3px;
+            background: var(--border-color);
+            z-index: -1;
+        }
+
+        .step.active:not(:last-child)::after {
+            background: var(--gradient-primary);
+        }
+
+        .step-number {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            border: 3px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.2em;
+            transition: all 0.3s;
+        }
+
+        .step.active .step-number {
+            background: var(--gradient-primary);
+            border-color: transparent;
+            color: white;
+            transform: scale(1.15);
+        }
+
+        .step.completed .step-number {
+            background: #10b981;
+            border-color: transparent;
+            color: white;
+        }
+
+        .step-label {
+            font-size: 0.9em;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .step.active .step-label {
+            color: var(--text-primary);
+            font-weight: 800;
+        }
+
+        @media (max-width: 1024px) {
+            .checkout-container {
+                grid-template-columns: 1fr;
+            }
+
+            .product-info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .steps-indicator {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .step:not(:last-child)::after {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 120px 4% 40px;
+            }
+
+            .product-summary,
+            .payment-form {
+                padding: 30px 25px;
+            }
+
+            .product-image-preview,
+            .product-image-icon {
+                height: 250px;
+            }
+
+            .dropdown-menu.active {
+                max-height: 500px;
+            }
+            
+            .dropdown-item {
+                padding: 18px 20px;
+            }
+            
+            .payment-method-logo {
+                width: 55px;
+                height: 55px;
+            }
+            
+            .dropdown-item-title {
+                font-size: 1.1em;
+            }
+
+            .page-header h1 {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo-img {
+                width: 55px;
+                height: 55px;
+            }
+
+            .logo-text {
+                font-size: 1.6em;
+            }
+
+            .product-info-grid {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loader-container">
+            <div class="loader"></div>
+            <div class="loader-inner"></div>
+            <div class="loader-logo">
+                <img src="https://i.ibb.co/7tKdRmfC/68-1.png" alt="BRAVO Logo">
+            </div>
+        </div>
+        <div class="loading-text" data-ar="جاري التحميل" data-en="Loading">جاري التحميل</div>
+    </div>
+
+    <canvas id="particles"></canvas>
+
+    <header>
+        <nav>
+            <a href="index.html" class="logo">
+                <img src="https://i.ibb.co/7tKdRmfC/68-1.png" alt="BRAVO" class="logo-img">
+                <span class="logo-text">BRAVO</span>
+            </a>
+
+            <div class="nav-actions">
+                <button class="action-btn theme-toggle" onclick="toggleTheme()" title="Toggle Theme">
+                    <i class="fas fa-moon theme-icon moon"></i>
+                    <i class="fas fa-sun theme-icon sun"></i>
+                </button>
+                <button class="action-btn lang-switch" onclick="toggleLanguage()" title="Switch Language">
+                    <span id="langText">EN</span>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>
+                <span class="text" data-ar="إتمام الدفع" data-en="Complete Payment">إتمام الدفع</span>
+                <span class="emoji">💳</span>
+            </h1>
+            <p>
+                <span data-ar="أكمل بياناتك لإتمام عملية الشراء بأمان" data-en="Complete your details to finish the purchase securely">أكمل بياناتك لإتمام عملية الشراء بأمان</span>
+                <span>🔒</span>
+            </p>
+        </div>
+
+        <div class="steps-indicator">
+            <div class="step completed">
+                <div class="step-number">1</div>
+                <div class="step-label" data-ar="اختيار المنتج" data-en="Select Product">اختيار المنتج</div>
+            </div>
+            <div class="step active">
+                <div class="step-number">2</div>
+                <div class="step-label" data-ar="إتمام الدفع" data-en="Payment">إتمام الدفع</div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-label" data-ar="استلام المنتج" data-en="Receive Product">استلام المنتج</div>
+            </div>
+        </div>
+
+        <div class="checkout-container">
+            <div class="product-summary">
+                <h2>
+                    <span class="text" data-ar="ملخص الطلب" data-en="Order Summary">ملخص الطلب</span>
+                    <span class="emoji">📦</span>
+                </h2>
+                <div id="productSummary"></div>
+            </div>
+
+            <div class="payment-form">
+                <h2>
+                    <span class="text" data-ar="معلومات الدفع" data-en="Payment Information">معلومات الدفع</span>
+                    <span class="emoji">💳</span>
+                </h2>
+                <form id="paymentForm">
+                    <div class="form-group">
+                        <label>
+                            <span>👤</span>
+                            <span data-ar="الاسم الكامل:" data-en="Full Name:">الاسم الكامل:</span>
+                        </label>
+                        <input type="text" id="fullName" required 
+                               data-ar-placeholder="أحمد محمد" 
+                               data-en-placeholder="Ahmed Mohamed"
+                               placeholder="أحمد محمد">
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <span>📧</span>
+                            <span data-ar="البريد الإلكتروني:" data-en="Email:">البريد الإلكتروني:</span>
+                        </label>
+                        <input type="email" id="email" required placeholder="example@email.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <span>📱</span>
+                            <span data-ar="رقم الهاتف:" data-en="Phone Number:">رقم الهاتف:</span>
+                        </label>
+                        <input type="tel" id="phone" required placeholder="+20 123 456 7890">
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <span>💰</span>
+                            <span data-ar="اختر طريقة الدفع:" data-en="Choose Payment Method:">اختر طريقة الدفع:</span>
+                        </label>
+                        <div class="payment-methods-dropdown">
+                            <div class="dropdown-toggle" id="dropdownToggle">
+                                <span id="selectedMethodText" data-ar="اختر طريقة الدفع" data-en="Choose Payment Method">
+                                    اختر طريقة الدفع
+                                </span>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                            <div class="dropdown-menu" id="dropdownMenu"></div>
+                        </div>
+                    </div>
+
+                    <div class="payment-instructions" id="paymentInstructions"></div>
+
+                    <button type="submit" class="submit-btn" id="submitBtn" disabled>
+                        <i class="fas fa-paper-plane"></i>
+                        <span data-ar="إرسال طلب الشراء" data-en="Submit Purchase Request">
+                            إرسال طلب الشراء
+                        </span>
+                    </button>
+
+                    <div class="security-badge">
+                        <i class="fas fa-shield-alt"></i>
+                        <span data-ar="جميع المعاملات آمنة ومشفرة" data-en="All transactions are secure and encrypted">
+                            جميع المعاملات آمنة ومشفرة
+                        </span>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLang = localStorage.getItem('bravoLang') || 'ar';
+        let currentTheme = localStorage.getItem('bravoTheme') || 'dark';
+        const productId = parseInt(localStorage.getItem('selectedProduct'));
+        const currentCountry = localStorage.getItem('bravoCountry') || 'egypt';
+        const products = JSON.parse(localStorage.getItem('bravoProducts')) || [];
+        const product = products.find(p => p.id === productId);
+
+        function init() {
+            if (currentTheme === 'light') document.body.classList.add('light-mode');
+            
+            if (currentLang === 'en') {
+                document.body.setAttribute('lang', 'en');
+                document.body.setAttribute('dir', 'ltr');
+                document.getElementById('langText').textContent = 'AR';
+                translatePage('en');
+            }
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+            currentTheme = document.body.classList.contains('light-mode') ? 'light' : 'dark';
+            localStorage.setItem('bravoTheme', currentTheme);
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'ar' ? 'en' : 'ar';
+            localStorage.setItem('bravoLang', currentLang);
+            
+            if (currentLang === 'en') {
+                document.body.setAttribute('lang', 'en');
+                document.body.setAttribute('dir', 'ltr');
+                document.getElementById('langText').textContent = 'AR';
+            } else {
+                document.body.setAttribute('lang', 'ar');
+                document.body.setAttribute('dir', 'rtl');
+                document.getElementById('langText').textContent = 'EN';
+            }
+            
+            translatePage(currentLang);
+            loadProduct();
+            loadPaymentMethods();
+        }
+
+        function translatePage(lang) {
+            document.querySelectorAll('[data-ar][data-en]').forEach(el => {
+                const text = el.getAttribute(`data-${lang}`);
+                if (el.tagName === 'INPUT') {
+                    el.placeholder = el.getAttribute(`data-${lang}-placeholder`);
+                } else {
+                    el.textContent = text;
+                }
+            });
+        }
+
+        // Particles
+        const canvas = document.getElementById('particles');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const particlesArray = [];
+        const numberOfParticles = 80;
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2.5 + 0.5;
+                this.speedX = Math.random() * 1 - 0.5;
+                this.speedY = Math.random() * 1 - 0.5;
+                this.color = `rgba(${Math.random() > 0.5 ? '147, 51, 234' : '236, 72, 153'}, ${Math.random() * 0.5 + 0.2})`;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x > canvas.width || this.x < 0) this.speedX *= -1;
+                if (this.y > canvas.height || this.y < 0) this.speedY *= -1;
+            }
+
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            for (let i = 0; i < numberOfParticles; i++) {
+                particlesArray.push(new Particle());
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particlesArray.forEach(particle => {
+                particle.update();
+                particle.draw();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+
+        initParticles();
+        animateParticles();
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Payment Methods - Updated with Real Data
+        const paymentAccounts = {
+            exchange: {
+                name: { ar: 'مكتب صرافة', en: 'Exchange Office' },
+                logo: 'https://cdn-icons-png.flaticon.com/512/2830/2830284.png',
+                instructions: {
+                    ar: [
+                        'اذهب لأقرب مكتب صرافة',
+                        'اطلب تحويل باسم المستلم المذكور',
+                        'ادفع المبلغ المطلوب نقداً',
+                        'احتفظ بالإيصال وصوره وأرفقه أدناه'
+                    ],
+                    en: [
+                        'Go to the nearest exchange office',
+                        'Request a transfer to the mentioned receiver',
+                        'Pay the required amount in cash',
+                        'Keep the receipt, take a photo and upload it below'
+                    ]
+                },
+                receiverName: 'HOSSAM KHALAF KAMAL MUSTAFA',
+                country: 'مصر / Egypt',
+                phoneNumber: '01012853829'
+            },
+            vodafone: {
+                name: { ar: 'فودافون كاش', en: 'Vodafone Cash' },
+                logo: 'https://i.ibb.co/cG2DBGb/18161202786386202508050126592659.jpg',
+                instructions: {
+                    ar: [
+                        'اطلب *9* من هاتفك فودافون',
+                        'اختر "تحويل رصيد"',
+                        'أدخل الرقم المذكور أدناه',
+                        'أكمل التحويل وصور الشاشة وأرفقها'
+                    ],
+                    en: [
+                        'Dial *9* from your Vodafone phone',
+                        'Choose "Transfer Credit"',
+                        'Enter the number mentioned below',
+                        'Complete transfer, screenshot and upload'
+                    ]
+                },
+                phoneNumber: '01012853829',
+                accountName: 'علي خلف كمال مصطفي'
+            },
+            paypal: {
+                name: { ar: 'بايبال', en: 'PayPal' },
+                logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/PayPal.svg/512px-PayPal.svg.png',
+                instructions: {
+                    ar: [
+                        'افتح حساب PayPal الخاص بك',
+                        'اختر "إرسال أموال"',
+                        'أدخل البريد الإلكتروني المذكور',
+                        'صور إثبات التحويل وأرفقه'
+                    ],
+                    en: [
+                        'Open your PayPal account',
+                        'Choose "Send Money"',
+                        'Enter the mentioned email',
+                        'Screenshot proof and upload'
+                    ]
+                },
+                email: 'aligedo29@yahoo.com'
+            },
+            binance: {
+                name: { ar: 'بينانس', en: 'Binance' },
+                logo: 'https://cryptologos.cc/logos/binance-coin-bnb-logo.png',
+                instructions: {
+                    ar: [
+                        'افتح تطبيق Binance',
+                        'اختر "Pay" أو "Transfer"',
+                        'استخدم Binance ID أو عنوان المحفظة',
+                        'صور إثبات التحويل وأرفقه'
+                    ],
+                    en: [
+                        'Open Binance app',
+                        'Choose "Pay" or "Transfer"',
+                        'Use Binance ID or wallet address',
+                        'Screenshot proof and upload'
+                    ]
+                },
+                binanceID: '302866313',
+                walletAddress: 'TEZhhtR2d27mTDQWqafP2DcaMd6Kwi9ggX',
+                qrCode: 'https://i.ibb.co/MDYMcDZr/Whats-App-Image-2025-12-12-at-00-42-53-a5918b08.jpg'
+            },
+            bank: {
+                name: { ar: 'تحويل بنكي', en: 'Bank Transfer' },
+                logo: 'https://i.ibb.co/3tvyBq9/png-clipart-bank-logo-euro-truck-simulator-2-bank-loan-finance-banks-pattern-building-investment-thu.png',
+                instructions: {
+                    ar: [
+                        'قم بتحويل بنكي من أي بنك',
+                        'استخدم رقم الحساب أو IBAN',
+                        'أرسل إيصال التحويل',
+                        'صور الإيصال وأرفقه أدناه'
+                    ],
+                    en: [
+                        'Make a bank transfer from any bank',
+                        'Use account number or IBAN',
+                        'Send transfer receipt',
+                        'Take photo of receipt and upload'
+                    ]
+                },
+                accountNumber: '4640111000018403',
+                iban: 'EG630002046404640111000018403',
+                accountName: 'علي خلف كمال مصطفي'
+            },
+            western: {
+                name: { ar: 'ويسترن يونيون', en: 'Western Union' },
+                logo: 'https://i.ibb.co/ZswZBGG/png-clipart-western-union-money-electronic-funds-transfer-bank-business-bank-text-service.png',
+                instructions: {
+                    ar: [
+                        'اذهب لأقرب فرع Western Union',
+                        'قدم بيانات المستلم المذكورة',
+                        'ادفع المبلغ المطلوب',
+                        'احتفظ برقم MTCN وصور الإيصال'
+                    ],
+                    en: [
+                        'Go to nearest Western Union branch',
+                        'Provide the mentioned receiver details',
+                        'Pay the required amount',
+                        'Keep MTCN number and photo receipt'
+                    ]
+                },
+                receiverName: 'HOSSAM KHALAF KAMAL MUSTAFA',
+                country: 'مصر / Egypt',
+                phoneNumber: '01012853829'
+            },
+            moneygram: {
+                name: { ar: 'موني جرام', en: 'MoneyGram' },
+                logo: 'https://i.ibb.co/7JWRmKY7/unnamed.png',
+                instructions: {
+                    ar: [
+                        'اذهب لأقرب فرع MoneyGram',
+                        'قدم بيانات المستلم المذكورة',
+                        'ادفع المبلغ المطلوب',
+                        'احتفظ برقم المرجع وصور الإيصال'
+                    ],
+                    en: [
+                        'Go to nearest MoneyGram branch',
+                        'Provide the mentioned receiver details',
+                        'Pay the required amount',
+                        'Keep reference number and photo receipt'
+                    ]
+                },
+                receiverName: 'HOSSAM KHALAF KAMAL MUSTAFA',
+                country: 'مصر / Egypt',
+                phoneNumber: '01012853829'
+            },
+            instapay: {
+                name: { ar: 'إنستاباي', en: 'InstaPay' },
+                logo: 'https://i.ibb.co/VpmBR3jc/19-2024-638683406312773338-277.jpg',
+                instructions: {
+                    ar: [
+                        'افتح تطبيق البنك الخاص بك',
+                        'اختر InstaPay',
+                        'أدخل رقم الموبايل المذكور',
+                        'صور إثبات التحويل وأرفقه'
+                    ],
+                    en: [
+                        'Open your bank app',
+                        'Choose InstaPay',
+                        'Enter the mentioned mobile number',
+                        'Screenshot proof and upload'
+                    ]
+                },
+                phoneNumber: '01012853829',
+                accountName: 'علي خلف كمال مصطفي'
+            },
+            redotpay: {
+                name: { ar: 'ريدوت باي', en: 'RedotPay' },
+                logo: 'https://i.ibb.co/5gcFk2Z7/images.png',
+                instructions: {
+                    ar: [
+                        'افتح تطبيق RedotPay',
+                        'اختر "Send"',
+                        'أدخل ID المذكور',
+                        'صور إثبات التحويل وأرفقه'
+                    ],
+                    en: [
+                        'Open RedotPay app',
+                        'Choose "Send"',
+                        'Enter the mentioned ID',
+                        'Screenshot proof and upload'
+                    ]
+                },
+                redotID: '1100359843'
+            }
+        };
+
+        let selectedPaymentMethod = null;
+        let uploadedFile = null;
+
+        function loadProduct() {
+            if (product) {
+                const price = currentCountry === 'egypt' ? product.priceEGP : product.priceUSD;
+                const currency = currentCountry === 'egypt' ? (currentLang === 'ar' ? 'جنيه' : 'EGP') : '$';
+
+                // Check if product is a book/PDF
+                const isBook = product.category && (product.category.toLowerCase().includes('book') || 
+                                                    product.category.toLowerCase().includes('كتاب') ||
+                                                    product.category.toLowerCase().includes('pdf'));
+
+                document.getElementById('productSummary').innerHTML = `
+                    ${product.image 
+                        ? `<img src="${product.image}" class="product-image-preview" alt="${product.title}">` 
+                        : `<div class="product-image-icon"><i class="fas ${product.icon}"></i></div>`
+                    }
+                    <div class="product-details">
+                        <h3>${product.title}</h3>
+                        ${isBook ? `
+                            <div class="pdf-badge">
+                                <i class="fas fa-file-pdf"></i>
+                                <span>${currentLang === 'ar' ? 'كتاب إلكتروني PDF' : 'PDF E-Book'}</span>
+                            </div>
+                        ` : ''}
+                        <p>${product.description}</p>
+                    </div>
+                    
+                    <div class="product-info-grid">
+                        <div class="product-info-item">
+                            <span class="product-info-label">
+                                <span>🏷️</span>
+                                <span>${currentLang === 'ar' ? 'اسم المنتج' : 'Product Name'}</span>
+                            </span>
+                            <span class="product-info-value">${product.title}</span>
+                        </div>
+                        <div class="product-info-item">
+                            <span class="product-info-label">
+                                <span>💰</span>
+                                <span>${currentLang === 'ar' ? 'السعر' : 'Price'}</span>
+                            </span>
+                            <span class="product-info-value">${price} ${currency}</span>
+                        </div>
+                        <div class="product-info-item">
+                            <span class="product-info-label">
+                                <span>📂</span>
+                                <span>${currentLang === 'ar' ? 'الفئة' : 'Category'}</span>
+                            </span>
+                            <span class="product-info-value">${product.category || (currentLang === 'ar' ? 'منتجات رقمية' : 'Digital Products')}</span>
+                        </div>
+                        <div class="product-info-item">
+                            <span class="product-info-label">
+                                <span>🌍</span>
+                                <span>${currentLang === 'ar' ? 'الدولة' : 'Country'}</span>
+                            </span>
+                            <span class="product-info-value">${currentCountry === 'egypt' ? (currentLang === 'ar' ? 'مصر' : 'Egypt') : (currentLang === 'ar' ? 'دولي' : 'International')}</span>
+                        </div>
+                    </div>
+
+                    <div class="price-breakdown">
+                        <div class="price-row total">
+                            <span class="label">${currentLang === 'ar' ? 'الإجمالي' : 'Total'}</span>
+                            <span class="value">${price} ${currency}</span>
+                        </div>
+                    </div>
+
+                    <div class="delivery-info">
+                        <i class="fas fa-rocket"></i>
+                        <div class="delivery-info-content">
+                            <h4>${currentLang === 'ar' ? 'تسليم فوري' : 'Instant Delivery'}</h4>
+                            <p>${currentLang === 'ar' 
+                                ? 'سيتم إرسال رابط التحميل إلى بريدك الإلكتروني فور تأكيد الدفع (خلال دقائق)' 
+                                : 'Download link will be sent to your email upon payment confirmation (within minutes)'}</p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                document.getElementById('productSummary').innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 5em; margin-bottom: 25px; color: var(--text-secondary);"></i>
+                        <h3 style="font-size: 1.8em; margin-bottom: 15px;">${currentLang === 'ar' ? 'لم يتم العثور على المنتج!' : 'Product not found!'}</h3>
+                        <a href="index.html" style="color: var(--primary); text-decoration: underline;">
+                            ${currentLang === 'ar' ? 'العودة للمتجر' : 'Back to Store'}
+                        </a>
+                    </div>
+                `;
+            }
+        }
+
+        function loadPaymentMethods() {
+            const allMethods = ['exchange', 'vodafone', 'paypal', 'binance', 'bank', 'western', 'moneygram', 'instapay', 'redotpay'];
+            const dropdownMenu = document.getElementById('dropdownMenu');
+            dropdownMenu.innerHTML = '';
+            
+            allMethods.forEach((methodKey, index) => {
+                const method = paymentAccounts[methodKey];
+                const div = document.createElement('div');
+                div.className = 'dropdown-item';
+                div.setAttribute('data-method', methodKey);
+                div.style.animationDelay = `${index * 0.05}s`;
+                div.innerHTML = `
+                    <img src="${method.logo}" 
+                         class="payment-method-logo" 
+                         alt="${method.name[currentLang]}" 
+                         onerror="this.src='https://cdn-icons-png.flaticon.com/512/2830/2830251.png'">
+                    <div class="dropdown-item-content">
+                        <div class="dropdown-item-title">${method.name[currentLang]}</div>
+                        <div class="dropdown-item-subtitle">
+                            ${method.instructions[currentLang][0]}
+                        </div>
+                    </div>
+                    <i class="fas fa-chevron-${currentLang === 'ar' ? 'left' : 'right'}" style="color: var(--primary); opacity: 0.5; font-size: 1.2em;"></i>
+                `;
+                dropdownMenu.appendChild(div);
+
+                div.addEventListener('click', () => {
+                    selectPaymentMethod(methodKey);
+                });
+            });
+        }
+
+        const dropdownToggle = document.getElementById('dropdownToggle');
+        const dropdownMenu = document.getElementById('dropdownMenu');
+
+        dropdownToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdownMenu.classList.toggle('active');
+            dropdownToggle.classList.toggle('active');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.payment-methods-dropdown')) {
+                dropdownMenu.classList.remove('active');
+                dropdownToggle.classList.remove('active');
+            }
+        });
+
+        function selectPaymentMethod(methodKey) {
+            selectedPaymentMethod = methodKey;
+            const method = paymentAccounts[methodKey];
+            
+            document.getElementById('selectedMethodText').innerHTML = `
+                <span style="display: flex; align-items: center; gap: 12px;">
+                    <img src="${method.logo}" style="width: 35px; height: 35px; object-fit: contain; background: white; border-radius: 8px; padding: 4px;" alt="${method.name[currentLang]}" onerror="this.style.display='none'">
+                    ${method.name[currentLang]}
+                </span>
+            `;
+
+            dropdownMenu.classList.remove('active');
+            dropdownToggle.classList.remove('active');
+
+            showPaymentInstructions(methodKey);
+            checkFormValidity();
+        }
+
+        function showPaymentInstructions(methodKey) {
+            const method = paymentAccounts[methodKey];
+            const instructionsDiv = document.getElementById('paymentInstructions');
+            
+            let accountInfo = '';
+            
+            if (method.receiverName) {
+                accountInfo += `
+                    <div class="account-details">
+                        <strong>👤 ${currentLang === 'ar' ? 'اسم المستلم:' : 'Receiver Name:'}</strong> ${method.receiverName}
+                    </div>
+                `;
+            }
+
+            if (method.country) {
+                accountInfo += `
+                    <div class="account-details">
+                        <strong>🌍 ${currentLang === 'ar' ? 'الدولة:' : 'Country:'}</strong> ${method.country}
+                    </div>
+                `;
+            }
+            
+            if (method.phoneNumber) {
+                accountInfo += `
+                    <div class="account-details">
+                        <strong>📱 ${currentLang === 'ar' ? 'رقم الهاتف:' : 'Phone Number:'}</strong> ${method.phoneNumber}
+                        <button class="copy-btn" onclick="copyToClipboard('${method.phoneNumber}')">
+                            <i class="fas fa-copy"></i> ${currentLang === 'ar' ? 'نسخ' : 'Copy'}
+                        </button>
+                    </div>
+                `;
+            }
+
+            if (method.accountName) {
+                accountInfo += `
+                    <div class="account-details">
+                        <strong>👤 ${currentLang === 'ar' ? 'اسم الحساب:' : 'Account Name:'}</strong> ${method.accountName}
+                    </div>
+                `;
+            }
+            
+            if (method.accountNumber) {
+                accountInfo += `
+                    <div class="account-details">
+                        <strong>🏦 ${currentLang === 'ar' ? 'رقم الحساب:' : 'Account Number:'}</strong> ${method.accountNumber}
+                        <button class="copy-btn" onclick="copyToClipboard('${method.accountNumber}')">
+                            <i class="fas fa-copy"></i> ${currentLang === 'ar' ? 'نسخ' : 'Copy'}
+                        </button>
+                    </div>
+                `;
+            }
+
+            if (method.iban) {
+                accountInfo += `
+                    <div class="account-details">
+                        <strong>🏦 IBAN:</strong> ${method.iban}
+                        <button class="copy-btn" onclick="copyToClipboard('${method.iban}')">
+                            <i class="fas fa-copy"></i> ${currentLang === 'ar' ? 'نسخ' : 'Copy'}
+                        </button>
+                    </div>
+                `;
+            }
+            
+            if (method.email) {
+                accountInfo += `
+                    <div class="account-details">
+                        <strong>📧 ${currentLang === 'ar' ? 'البريد الإلكتروني:' : 'Email:'}</strong> ${method.email}
+                        <button class="copy-btn" onclick="copyToClipboard('${method.email}')">
+                            <i class="fas fa-copy"></i> ${currentLang === 'ar' ? 'نسخ' : 'Copy'}
+                        </button>
+                    </div>
+                `;
+            }
+
+            if (method.binanceID) {
+                accountInfo += `
+                    <div class="account-details">
+                        <strong>🆔 Binance ID:</strong> ${method.binanceID}
+                        <button class="copy-btn" onclick="copyToClipboard('${method.binanceID}')">
+                            <i class="fas fa-copy"></i> ${currentLang === 'ar' ? 'نسخ' : 'Copy'}
+                        </button>
+                    </div>
+                `;
+            }
+
+            if (method.walletAddress) {
+                accountInfo += `
+                    <div class="account-details">
+                        <strong>💼 ${currentLang === 'ar' ? 'عنوان المحفظة:' : 'Wallet Address:'}</strong> ${method.walletAddress}
+                        <button class="copy-btn" onclick="copyToClipboard('${method.walletAddress}')">
+                            <i class="fas fa-copy"></i> ${currentLang === 'ar' ? 'نسخ' : 'Copy'}
+                        </button>
+                    </div>
+                `;
+            }
+
+            if (method.qrCode) {
+                accountInfo += `
+                    <div class="account-details" style="text-align: center;">
+                        <strong>📱 ${currentLang === 'ar' ? 'كود QR:' : 'QR Code:'}</strong><br>
+                        <img src="${method.qrCode}" style="max-width: 250px; margin-top: 15px; border-radius: 15px; border: 3px solid var(--border-color);" alt="QR Code">
+                    </div>
+                `;
+            }
+
+            if (method.redotID) {
+                accountInfo += `
+                    <div class="account-details">
+                        <strong>🆔 RedotPay ID:</strong> ${method.redotID}
+                        <button class="copy-btn" onclick="copyToClipboard('${method.redotID}')">
+                            <i class="fas fa-copy"></i> ${currentLang === 'ar' ? 'نسخ' : 'Copy'}
+                        </button>
+                    </div>
+                `;
+            }
+
+            instructionsDiv.innerHTML = `
+                <h4>
+                    <i class="fas fa-info-circle"></i>
+                    ${currentLang === 'ar' ? `خطوات الدفع عبر ${method.name.ar}` : `Payment Steps via ${method.name.en}`}
+                </h4>
+                ${method.instructions[currentLang].map((instruction, index) => `
+                    <div class="instruction-item">
+                        <div class="instruction-number">${index + 1}</div>
+                        <div>${instruction}</div>
+                    </div>
+                `).join('')}
+                ${accountInfo}
+                
+                <div class="upload-section" id="uploadSection">
+                    <h4>
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        ${currentLang === 'ar' ? 'رفع إثبات التحويل' : 'Upload Transfer Proof'}
+                    </h4>
+                    <p style="color: var(--text-secondary); margin-bottom: 20px;">
+                        ${currentLang === 'ar' ? 'يجب رفع صورة واضحة لإثبات التحويل (إيصال / لقطة شاشة)' : 'Must upload clear image of transfer proof (receipt / screenshot)'}
+                    </p>
+                    <div class="upload-area">
+                        <input type="file" id="uploadInput" class="upload-input" accept="image/*" onchange="handleFileUpload(event)">
+                        <label for="uploadInput" class="upload-label">
+                            <i class="fas fa-image"></i>
+                            ${currentLang === 'ar' ? 'اختر صورة' : 'Choose Image'}
+                        </label>
+                    </div>
+                    <div class="upload-preview" id="uploadPreview">
+                        <img id="previewImage" src="" alt="Preview">
+                    </div>
+                    <div class="upload-success" id="uploadSuccess">
+                        <i class="fas fa-check-circle"></i>
+                        ${currentLang === 'ar' ? 'تم رفع الصورة بنجاح!' : 'Image uploaded successfully!'}
+                    </div>
+                    <p class="upload-info">
+                        ${currentLang === 'ar' ? '⚠️ الصور المقبولة: JPG, PNG, JPEG (حجم أقصى 5MB)' : '⚠️ Accepted: JPG, PNG, JPEG (Max 5MB)'}
+                    </p>
+                </div>
+
+                <div class="warning-box">
+                    <strong>
+                        <i class="fas fa-exclamation-triangle"></i>
+                        ${currentLang === 'ar' ? 'مهم جداً:' : 'Very Important:'}
+                    </strong>
+                    <p>
+                        ${currentLang === 'ar' 
+                            ? 'بعد إتمام التحويل، املأ البيانات أعلاه وارفع صورة الإيصال، ثم اضغط "إرسال طلب الشراء". سيتم مراجعة طلبك خلال دقائق وسنرسل لك رابط التحميل فور التأكيد.' 
+                            : 'After completing the transfer, fill in the data above, upload the receipt image, then click "Submit Purchase Request". Your request will be reviewed within minutes and we will send you the download link upon confirmation.'}
+                    </p>
+                </div>
+            `;
+
+            instructionsDiv.classList.add('active');
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            
+            if (!file) return;
+
+            // Validate file type
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+            if (!validTypes.includes(file.type)) {
+                alert(currentLang === 'ar' ? '❌ يرجى اختيار صورة بصيغة JPG أو PNG فقط!' : '❌ Please choose JPG or PNG image only!');
+                event.target.value = '';
+                return;
+            }
+
+            // Validate file size (5MB max)
+            if (file.size > 5 * 1024 * 1024) {
+                alert(currentLang === 'ar' ? '❌ حجم الصورة كبير جداً! الحد الأقصى 5MB' : '❌ Image too large! Max 5MB');
+                event.target.value = '';
+                return;
+            }
+
+            uploadedFile = file;
+
+            // Show preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const previewImg = document.getElementById('previewImage');
+                const previewDiv = document.getElementById('uploadPreview');
+                const successDiv = document.getElementById('uploadSuccess');
+                const uploadSection = document.getElementById('uploadSection');
+
+                previewImg.src = e.target.result;
+                previewDiv.classList.add('active');
+                successDiv.classList.add('active');
+                uploadSection.classList.add('has-file');
+                
+                checkFormValidity();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function checkFormValidity() {
+            const fullName = document.getElementById('fullName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const submitBtn = document.getElementById('submitBtn');
+
+            const isValid = fullName && email && phone && selectedPaymentMethod && uploadedFile;
+            
+            submitBtn.disabled = !isValid;
+        }
+
+        // Add event listeners for form inputs
+        document.getElementById('fullName').addEventListener('input', checkFormValidity);
+        document.getElementById('email').addEventListener('input', checkFormValidity);
+        document.getElementById('phone').addEventListener('input', checkFormValidity);
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert(currentLang === 'ar' ? '✅ تم النسخ بنجاح!' : '✅ Copied successfully!');
+            });
+        }
+
+        document.getElementById('paymentForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            if (!selectedPaymentMethod) {
+                alert(currentLang === 'ar' ? '⚠️ يرجى اختيار طريقة الدفع' : '⚠️ Please choose payment method');
+                return;
+            }
+
+            if (!uploadedFile) {
+                alert(currentLang === 'ar' ? '⚠️ يرجى رفع صورة إثبات التحويل' : '⚠️ Please upload transfer proof image');
+                return;
+            }
+
+            const fullName = document.getElementById('fullName').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+
+            const price = currentCountry === 'egypt' ? product.priceEGP : product.priceUSD;
+            const currency = currentCountry === 'egypt' ? 'EGP' : 'USD';
+
+            // Convert image to base64
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const order = {
+                    orderId: 'ORD-' + Date.now(),
+                    productId: product.id,
+                    productTitle: product.title,
+                    price: price,
+                    currency: currency,
+                    paymentMethod: selectedPaymentMethod,
+                    paymentMethodName: paymentAccounts[selectedPaymentMethod].name[currentLang],
+                    customerName: fullName,
+                    customerEmail: email,
+                    customerPhone: phone,
+                    transferProof: e.target.result,
+                    downloadLink: product.downloadLink,
+                    status: 'pending',
+                    orderDate: new Date().toISOString()
+                };
+
+                let orders = JSON.parse(localStorage.getItem('bravoOrders')) || [];
+                orders.push(order);
+                localStorage.setItem('bravoOrders', JSON.stringify(orders));
+                localStorage.setItem('currentOrder', JSON.stringify(order));
+
+                window.location.href = 'pending.html';
+            };
+            reader.readAsDataURL(uploadedFile);
+        });
+
+        loadProduct();
+        loadPaymentMethods();
+
+        window.addEventListener('load', () => {
+            init();
+            setTimeout(() => {
+                document.getElementById('loadingScreen').classList.add('hidden');
+            }, 1500);
+        });
+    </script>
+</body>
+</html>

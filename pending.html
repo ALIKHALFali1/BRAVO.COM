@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRAVO - انتظار تأكيد الدفع ⏳</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #1e1b4b 0%, #2d1b69 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: white;
+        }
+
+        .pending-container {
+            max-width: 700px;
+            background: rgba(255,255,255,0.1);
+            padding: 60px;
+            border-radius: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            text-align: center;
+            animation: fadeIn 0.8s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .pending-icon {
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            animation: pulse 2s infinite;
+            position: relative;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.7);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 20px rgba(251, 191, 36, 0);
+            }
+        }
+
+        .pending-icon i {
+            font-size: 5em;
+            color: white;
+        }
+
+        .spinner {
+            position: absolute;
+            width: 170px;
+            height: 170px;
+            border: 5px solid rgba(255,255,255,0.1);
+            border-top: 5px solid white;
+            border-radius: 50%;
+            animation: spin 1.5s linear infinite;
+            top: -10px;
+            left: -10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        h1 {
+            font-size: 2.8em;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #fbbf24, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .message {
+            font-size: 1.3em;
+            margin-bottom: 40px;
+            opacity: 0.9;
+            line-height: 1.8;
+        }
+
+        .order-info {
+            background: rgba(255,255,255,0.05);
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            text-align: right;
+        }
+
+        .order-info h3 {
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            text-align: center;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            opacity: 0.7;
+        }
+
+        .info-value {
+            font-weight: 700;
+        }
+
+        .order-id {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-size: 1.3em;
+            font-weight: 900;
+            letter-spacing: 2px;
+        }
+
+        .status-steps {
+            margin: 40px 0;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .step.completed {
+            background: rgba(34, 197, 94, 0.2);
+            border: 2px solid #22c55e;
+        }
+
+        .step.active {
+            background: rgba(251, 191, 36, 0.2);
+            border: 2px solid #fbbf24;
+            animation: glow 2s infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 30px rgba(251, 191, 36, 0.6);
+            }
+        }
+
+        .step-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+        }
+
+        .step.completed .step-icon {
+            background: #22c55e;
+        }
+
+        .step.active .step-icon {
+            background: #fbbf24;
+            color: #1e1b4b;
+        }
+
+        .step-content {
+            flex: 1;
+            text-align: right;
+        }
+
+        .step-title {
+            font-weight: 700;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+
+        .step-description {
+            opacity: 0.7;
+            font-size: 0.9em;
+        }
+
+        .refresh-notice {
+            background: rgba(59, 130, 246, 0.2);
+            border: 2px solid #3b82f6;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .refresh-notice i {
+            color: #3b82f6;
+            margin-left: 10px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 35px;
+            border-radius: 15px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.1em;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-3px);
+        }
+
+        .estimated-time {
+            background: rgba(139, 92, 246, 0.2);
+            border: 2px solid #8b5cf6;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 1.1em;
+        }
+
+        .estimated-time i {
+            color: #8b5cf6;
+            margin-left: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .pending-container {
+                padding: 40px 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="pending-container">
+        <div class="pending-icon">
+            <div class="spinner"></div>
+            <i class="fas fa-clock"></i>
+        </div>
+
+        <h1>طلبك قيد المراجعة ⏳</h1>
+        <p class="message">
+            شكراً لك! تم استلام طلبك بنجاح. نحن نراجع معلومات الدفع الآن وسنقوم بتأكيد طلبك خلال دقائق.
+        </p>
+
+        <div class="order-info" id="orderInfo">
+            <!-- Order info will be loaded here -->
+        </div>
+
+        <div class="refresh-notice">
+            <i class="fas fa-sync-alt"></i>
+            <strong>سيتم تحديث الصفحة تلقائياً</strong> عند تأكيد الدفع، أو يمكنك الضغط على زر "تحديث الحالة" أدناه.
+        </div>
+
+        <div class="status-steps">
+            <div class="step completed">
+                <div class="step-icon">
+                    <i class="fas fa-check"></i>
+                </div>
+                <div class="step-content">
+                    <div class="step-title">تم إرسال الطلب</div>
+                    <div class="step-description">تم استلام طلبك وبياناتك بنجاح</div>
+                </div>
+            </div>
+
+            <div class="step active">
+                <div class="step-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="step-content">
+                    <div class="step-title">مراجعة الدفع</div>
+                    <div class="step-description">نحن نراجع معلومات الدفع الآن...</div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-icon">
+                    <i class="fas fa-download"></i>
+                </div>
+                <div class="step-content">
+                    <div class="step-title">جاهز للتحميل</div>
+                    <div class="step-description">سيظهر رابط التحميل بعد التأكيد</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="estimated-time">
+            <i class="fas fa-hourglass-half"></i>
+            <strong>الوقت المتوقع للتأكيد:</strong> 5-10 دقائق
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-primary" onclick="checkStatus()">
+                <i class="fas fa-sync-alt"></i> تحديث الحالة
+            </button>
+            <a href="index.html" class="btn btn-secondary">
+                <i class="fas fa-home"></i> العودة للمتجر
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const currentOrder = JSON.parse(localStorage.getItem('currentOrder'));
+
+        if (currentOrder) {
+            document.getElementById('orderInfo').innerHTML = `
+                <h3>معلومات الطلب</h3>
+                <div class="order-id">
+                    ${currentOrder.orderId}
+                </div>
+                <div class="info-row">
+                    <span class="info-label">المنتج:</span>
+                    <span class="info-value">${currentOrder.productTitle}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">المبلغ:</span>
+                    <span class="info-value">${currentOrder.price} ${currentOrder.currency === 'EGP' ? 'جنيه' : '$'}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">طريقة الدفع:</span>
+                    <span class="info-value">${currentOrder.paymentMethodName}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">الاسم:</span>
+                    <span class="info-value">${currentOrder.customerName}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">البريد الإلكتروني:</span>
+                    <span class="info-value">${currentOrder.customerEmail}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">الحالة:</span>
+                    <span class="info-value" style="color: #fbbf24;">قيد المراجعة</span>
+                </div>
+            `;
+        }
+
+        // Check order status
+        function checkStatus() {
+            const orders = JSON.parse(localStorage.getItem('bravoOrders')) || [];
+            const order = orders.find(o => o.orderId === currentOrder.orderId);
+
+            if (order && order.status === 'confirmed') {
+                // Update current order
+                localStorage.setItem('currentOrder', JSON.stringify(order));
+                // Redirect to download page
+                window.location.href = 'download.html';
+            } else {
+                alert('⏳ طلبك لا يزال قيد المراجعة. يرجى الانتظار قليلاً...');
+            }
+        }
+
+        // Auto check every 10 seconds
+        setInterval(() => {
+            const orders = JSON.parse(localStorage.getItem('bravoOrders')) || [];
+            const order = orders.find(o => o.orderId === currentOrder.orderId);
+
+            if (order && order.status === 'confirmed') {
+                localStorage.setItem('currentOrder', JSON.stringify(order));
+                window.location.href = 'download.html';
+            }
+        }, 10000);
+
+        // Send email notification (simulation)
+        console.log('إرسال إشعار بريد إلكتروني إلى:', currentOrder.customerEmail);
+        console.log('رقم الطلب:', currentOrder.orderId);
+    </script>
+</body>
+</html>
